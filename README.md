@@ -3,7 +3,16 @@
 
 ## Getting started
 
-`$ npm install react-native-android-broadcast-receiver-event-reminder --save`
+Add the module as a *package.json* dependency
+```
+{
+  .....
+  "name": "my app",
+  .....
+  "dependencies": {
+	"react-native-android-broadcast-receiver-event-reminder": "freedomson/react-native-android-broadcast-receiver-event-reminder#master",
+  .....
+```
 
 ### Mostly automatic installation
 
@@ -14,9 +23,36 @@
 
 #### Android
 
-1. Open up `android/app/src/main/java/[...]/MainActivity.java`
+1. Open up `android/app/src/main/java/[...]/MainApplication.java`
   - Add `import com.androidbroadcastreceivereventreminder.RNAndroidBroadcastReceiverEventReminderPackage;` to the imports at the top of the file
   - Add `new RNAndroidBroadcastReceiverEventReminderPackage()` to the list returned by the `getPackages()` method
+2. Register receiver on your application Main Activity
+``android/app/src/main/java/[...]/MainActivity.java`:
+	```
+	.....
+	import com.androidbroadcastreceivereventreminder.EventReminderBroadcastReceiver;
+	.....
+	public class MainActivity extends ReactActivity {
+		.....
+		EventReminderBroadcastReceiver receiver;
+		IntentFilter intentFilter;
+		.....
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			Log.d("ReactNativeJS", "EventReminderBroadcastReceiver event fired: onCreate");
+			intentFilter = new IntentFilter(CalendarContract.ACTION_EVENT_REMINDER);
+			intentFilter.addAction(getPackageName() + CalendarContract.ACTION_EVENT_REMINDER);
+			receiver = new EventReminderBroadcastReceiver();
+		}
+		.....
+		@Override
+		protected void onResume() {
+			super.onResume();
+			Log.d("ReactNativeJS", "EventReminderBroadcastReceiver event fired: onResume");
+			registerReceiver(receiver, intentFilter);
+		}
+  	```
 2. Append the following lines to `android/settings.gradle`:
   	```
   	include ':react-native-android-broadcast-receiver-event-reminder'
@@ -30,17 +66,20 @@
   	```
 	  <manifest ....>
 	  		.....
+	        <uses-permission android:name="android.permission.READ_CALENDAR"/>
+	  		.....
 			<application ...>
-					.....
-			        <receiver
-						android:name="com.androidbroadcastreceivereventreminder.EventReminderBroadcastReceiver"
-						android:enabled="true"
-						android:exported="true">
-						<intent-filter>
-							<action android:name="android.intent.action.EVENT_REMINDER"/>
-							<data android:scheme="content" />
-						</intent-filter>
-        			</receiver>
+				.....
+				<receiver
+					android:name="com.androidbroadcastreceivereventreminder.EventReminderBroadcastReceiver"
+					android:enabled="true"
+					android:exported="true">
+					<intent-filter>
+					<data android:scheme="content" />
+					<action android:name="android.intent.action.EVENT_REMINDER"/>
+					</intent-filter>
+				</receiver>
+				.....
    			</application>
       </manifest>
   	```
@@ -50,20 +89,14 @@
 import { DeviceEventEmitter } from "react-native";
 
 //Add it in componentWillMount or somewhere where it will get executed at the start of app 
-DeviceEventEmitter.addListener('GEventReminderBroadcastReceiver', function (map) {
-    console.log('Google Broadcast referrer data is: ' + map.referrer;
+DeviceEventEmitter.addListener('GEventReminderBroadcastReceiver', function (eventid) {
+    console.log('Calendar event id is: ' + eventid;
 });;
 
 //Do not forget to remove the listener at componentWillUnmount 
 componentWillUnmount() {
     DeviceEventEmitter.removeListener('GEventReminderBroadcastReceiver'); 
   }
-
-//You can also get the referrer which is stored in the local variable by
-import RNAndroidBroadcastReceiverEventReminder from 'react-native-android-broadcast-receiver-event-reminder'; 
-
-//This will return the referrer value if we have got it other will return "NOT AVAILABLE"
-let referrerValue = await RNAndroidBroadcastReceiverEventReminder.getReferrerData();
 
 ```
   
