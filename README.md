@@ -4,6 +4,7 @@
 ## Getting started
 
 Add the module as a *package.json* dependency
+
 ```
 {
   .....
@@ -27,7 +28,7 @@ Add the module as a *package.json* dependency
   - Add `import com.androidbroadcastreceivereventreminder.RNAndroidBroadcastReceiverEventReminderPackage;` to the imports at the top of the file
   - Add `new RNAndroidBroadcastReceiverEventReminderPackage()` to the list returned by the `getPackages()` method
 2. Register receiver on your application Main Activity
-``android/app/src/main/java/[...]/MainActivity.java`:
+`android/app/src/main/java/[...]/MainActivity.java`:
 	```
 	.....
 	import com.androidbroadcastreceivereventreminder.EventReminderBroadcastReceiver;
@@ -91,12 +92,16 @@ import { DeviceEventEmitter } from "react-native";
 //Add it in componentWillMount or somewhere where it will get executed at the start of app 
 DeviceEventEmitter.addListener('GEventReminderBroadcastReceiver', function (eventid) {
     console.log('Calendar event id is: ' + eventid;
-});;
+});
 
 //Do not forget to remove the listener at componentWillUnmount 
 componentWillUnmount() {
     DeviceEventEmitter.removeListener('GEventReminderBroadcastReceiver'); 
-  }
+}
 
 ```
-  
+
+## Testing via adb
+```javascript
+$adb shell am broadcast -a android.intent.action.EVENT_REMINDER
+```
